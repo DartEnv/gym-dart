@@ -8,5 +8,5 @@ pip install -e .
 cd ..
 git clone https://github.com/bchasnov/gym-dart
 cd gym-dart
-pip install -e.
+pip install -e .
 ```
