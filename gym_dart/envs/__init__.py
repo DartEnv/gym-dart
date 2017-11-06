@@ -3,15 +3,15 @@ from gym_dart.envs.dart_env import DartEnv
 # message if pydart is not installed correctly
 
 from gym_dart.envs.cart_pole import DartCartPoleEnv
-#from gym.envs.dart.hopper import DartHopperEnv
-#from gym.envs.dart.cartpole_swingup import DartCartPoleSwingUpEnv
-#from gym.envs.dart.reacher import DartReacherEnv
-#from gym.envs.dart.cart_pole_img import DartCartPoleImgEnv
-#from gym.envs.dart.walker2d import DartWalker2dEnv
-#from gym.envs.dart.walker3d import DartWalker3dEnv
-#from gym.envs.dart.inverted_double_pendulum import DartDoubleInvertedPendulumEnv
-#from gym.envs.dart.dog import DartDogEnv
-#from gym.envs.dart.reacher2d import DartReacher2dEnv
-#
-#from gym.envs.dart.walker3d_spd import DartWalker3dSPDEnv
-#from gym.envs.dart.human_walker import DartHumanWalkerEnv
+from gym_dart.envs.hopper import DartHopperEnv
+from gym_dart.envs.cartpole_swingup import DartCartPoleSwingUpEnv
+from gym_dart.envs.reacher import DartReacherEnv
+from gym_dart.envs.cart_pole_img import DartCartPoleImgEnv
+from gym_dart.envs.walker2d import DartWalker2dEnv
+from gym_dart.envs.walker3d import DartWalker3dEnv
+from gym_dart.envs.inverted_double_pendulum import DartDoubleInvertedPendulumEnv
+from gym_dart.envs.dog import DartDogEnv
+from gym_dart.envs.reacher2d import DartReacher2dEnv
+
+from gym_dart.envs.walker3d_spd import DartWalker3dSPDEnv
+from gym_dart.envs.human_walker import DartHumanWalkerEnv
