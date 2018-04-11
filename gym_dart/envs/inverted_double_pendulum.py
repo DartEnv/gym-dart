@@ -9,11 +9,14 @@ class DartDoubleInvertedPendulumEnv(dart_env.DartEnv, utils.EzPickle):
     def __init__(self):
         control_bounds = np.array([[1.0],[-1.0]])
         self.action_scale = 40
-        dart_env.DartEnv.__init__(self, 'inverted_double_pendulum.skel', 2, 6, control_bounds, dt=0.01)
+        dart_env.DartEnv.__init__(
+            self, 'inverted_double_pendulum.skel', 2, 8, control_bounds, dt=0.01)
         utils.EzPickle.__init__(self)
 
+        self.init_qpos = np.array(self.robot_skeleton.q).copy()
+        self.init_qvel = np.array(self.robot_skeleton.dq).copy()
+
     def _step(self, a):
-        reward = 2.0
 
         tau = np.zeros(self.robot_skeleton.ndofs)
         tau[0] = a[0] * self.action_scale
@@ -21,27 +24,38 @@ class DartDoubleInvertedPendulumEnv(dart_env.DartEnv, utils.EzPickle):
         self.do_simulation(tau, self.frame_skip)
         ob = self._get_obs()
 
-        reward -= 0.01*ob[0]**2
-        reward += np.cos(ob[1]) + np.cos(ob[2])
-        if (np.cos(ob[1]) + np.cos(ob[2])) > 1.8:
-            reward += 5
+        base = self.robot_skeleton.name_to_body['cart'].to_world()[1]
+        weight_sz = 0.02 # TODO: Make sure this doesn't change.
+        max_height = 0.6
+        raw_height = self.robot_skeleton.name_to_body['weight'].to_world()[1]
+        # Have the same scaling as the gym env.
+        height = 2.0*(raw_height - base - weight_sz)/max_height
 
-        notdone = np.isfinite(ob).all() and np.abs(ob[1]) <= np.pi * 3.5 and np.abs(ob[2]) <= np.pi * 3.5# and (np.abs(ob[1]) <= .2) and (np.abs(ob[2]) <= .2)
-        done = not notdone
+        v1, v2 = self.robot_skeleton.dq[1:3]
+
+        alive_bonus = 10.
+        dist_penalty = 0.01*ob[0]**2 + (height - 2.)**2
+        vel_penalty = 1e-3 * v1**2 + 5e-3 * v2**2
+        reward = alive_bonus - dist_penalty - vel_penalty
+
+        done = bool(height <= 1)
         return ob, reward, done, {}
 
 
     def _get_obs(self):
-        return np.concatenate([self.robot_skeleton.q, self.robot_skeleton.dq]).ravel()
+        return np.concatenate([
+            self.robot_skeleton.q[:1],
+            np.sin(self.robot_skeleton.q[1:]),
+            np.cos(self.robot_skeleton.q[1:]),
+            self.robot_skeleton.dq
+        ]).ravel()
 
     def reset_model(self):
         self.dart_world.reset()
-        qpos = self.robot_skeleton.q + self.np_random.uniform(low=-.01, high=.01, size=self.robot_skeleton.ndofs)
-        qvel = self.robot_skeleton.dq + self.np_random.uniform(low=-.01, high=.01, size=self.robot_skeleton.ndofs)
-        if self.np_random.uniform(low=0, high=1, size=1) > 0.5:
-            qpos[1] += np.pi
-        else:
-            qpos[1] += -np.pi
+        qpos = self.init_qpos + \
+               self.np_random.uniform(low=-.1, high=.1, size=self.robot_skeleton.ndofs)
+        qvel = self.init_qvel + \
+               self.np_random.randn(self.robot_skeleton.ndofs) * 0.1
         self.set_state(qpos, qvel)
         return self._get_obs()
 
